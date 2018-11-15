@@ -168,14 +168,37 @@ static int rpmsg_bifrost_probe(struct rpmsg_device *dev)
 	return 0;
 }
 
+static int rpmsg_bifrost_suspend(struct device *dev)
+{
+	pr_info("rpmsg_bifrost_suspend\n");
+
+	rpmsg_write_device_memory(NULL, 0x55, 0xAAAA);
+
+        wait_for_completion_timeout(&bdev->completion, msecs_to_jiffies(1000));
+
+        return 0;
+}
+
+static int rpmsg_bifrost_resume(struct device *dev)
+{
+	pr_info("rpmsg_bifrost_resume\n");
+
+	return rpmsg_write_device_memory(NULL, 0x55, 0x5555);
+}
+
 static struct rpmsg_device_id rpmsg_driver_bifrost_id_table[] = {
 	{ .name	= "rpmsg-client-bifrost" },
 	{ },
 };
 MODULE_DEVICE_TABLE(rpmsg, rpmsg_driver_bifrost_id_table);
 
+static SIMPLE_DEV_PM_OPS(rpmsg_bifrost_pm, rpmsg_bifrost_suspend, rpmsg_bifrost_resume);
+
 static struct rpmsg_driver rpmsg_bifrost_client = {
-	.drv.name	= KBUILD_MODNAME,
+	.drv = {
+		.name	= KBUILD_MODNAME,
+		.pm	= &rpmsg_bifrost_pm,
+	},
 	.id_table	= rpmsg_driver_bifrost_id_table,
 	.probe		= rpmsg_bifrost_probe,
 	.callback	= rpmsg_bifrost_callback,
