@@ -170,7 +170,7 @@ static unsigned int bifrost_poll(struct file *file, poll_table *wait)
 {
         struct bifrost_user_handle *hnd = file->private_data;
         unsigned int v;
-        INFO("\n");
+        /* INFO("\n"); */
 
         poll_wait(file, &hnd->waitq, wait);
 
