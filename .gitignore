@@ -1,0 +1,8 @@
+*.o
+*~
+.bifrost*
+.tmp*
+*.ko
+*.mod.c
+modules.order
+Module.symvers
