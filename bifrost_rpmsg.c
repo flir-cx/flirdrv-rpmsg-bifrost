@@ -10,7 +10,9 @@
  *
  */
 
+#include <linux/dma-mapping.h>
 #include <linux/module.h>
+#include <linux/pagemap.h>
 #include <linux/platform_device.h>
 #include <linux/rpmsg.h>
 
@@ -25,17 +27,19 @@ irqreturn_t FVDIRQ2Service(int irq, void *dev_id);
 #define FPGA_IRQ_1      ((3-1)*32 + 17) // GPIO3.17
 #define FPGA_IRQ_2      ((3-1)*32 + 18) // GPIO3.18
 
+#define FRAME_GRAB_IMAGE_SIZE (160*120*2)
+
 enum msg_type {
-	REG_M4_WRITE,	// To M4, reg+value
-	REG_M4_READ,	// To M4, reg, From M4 reg+value
-	M4_EXEC_IRQ,	// From M4, value = irq status
-	M4_HW_IRQ,	// From M4, value = irq num
+        REG_M4_WRITE,	// To M4, reg+value
+        REG_M4_READ,	// To M4, reg, From M4 reg+value
+        M4_EXEC_IRQ,	// From M4, value = irq status
+        M4_HW_IRQ,	// From M4, value = irq num
 };
 
 struct m4_msg {
-	uint32_t type;
-	uint32_t reg;
-	uint32_t value;
+        uint32_t type;
+        uint32_t reg;
+        uint32_t value;
 };
 
 static uint32_t recv_reg;
@@ -45,7 +49,7 @@ int rpmsg_write_device_memory(void *handle, u32 offset, u32 value)
 {
 	struct m4_msg msg;
 
-	msg.type = REG_M4_WRITE;
+        msg.type = REG_M4_WRITE;
         msg.reg = offset;
         msg.value = value;
 
@@ -56,8 +60,9 @@ int rpmsg_read_device_memory(void *handle, u32 offset, u32 *value)
 {
 	struct m4_msg msg;
 
-	msg.type = REG_M4_READ;
+        msg.type = REG_M4_READ;
         msg.reg = offset;
+        msg.value = *value;
         recv_reg = 0;
 
         if (bdev->rpmsg_dev && bdev->rpmsg_dev->ept)
@@ -170,10 +175,20 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 
 static int rpmsg_bifrost_probe(struct rpmsg_device *dev)
 {
+	struct m4_msg msg;
+	void *vaddr = NULL;
+	dma_addr_t paddr;
+
 	dev_info(&dev->dev, "new channel: 0x%x -> 0x%x!\n", dev->src, dev->dst);
 
 	bdev->rpmsg_dev = dev;
-	return 0;
+	vaddr = dma_alloc_coherent(NULL, PAGE_ALIGN(FRAME_GRAB_IMAGE_SIZE*2), &paddr, GFP_DMA | GFP_KERNEL);
+
+	msg.type = REG_M4_WRITE;
+	msg.reg = 0x33;
+	msg.value = paddr;
+
+	return rpmsg_send(dev->ept, &msg, sizeof(msg));
 }
 
 static int rpmsg_bifrost_suspend(struct device *dev)
