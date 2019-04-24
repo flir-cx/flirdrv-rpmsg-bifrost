@@ -573,7 +573,7 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
                 u32 mask = (u32)arg;
 
                 hnd->event_enable_mask = mask;
-                INFO("BIFROST_IOCTL_ENABLE_EVENT mask %#08x\n", mask);
+//                INFO("BIFROST_IOCTL_ENABLE_EVENT mask %#08x\n", mask);
                 break;
         }
 
@@ -582,7 +582,7 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
                 u32 mask = (u32)arg;
 
                 hnd->irq_forwarding_mask = mask;
-                INFO("BIFROST_IOCTL_IRQ_FORWARDING mask %#08x\n", mask);
+//                INFO("BIFROST_IOCTL_IRQ_FORWARDING mask %#08x\n", mask);
                 break;
         }
 
@@ -590,7 +590,7 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
         {
                 struct bifrost_event_cont *p;
 
-                INFO("BIFROST_IOCTL_DEQUEUE_EVENT\n");
+ //               INFO("BIFROST_IOCTL_DEQUEUE_EVENT\n");
                 p = dequeue_event(hnd);
                 if (p == NULL)
                         return -EINVAL;
