@@ -359,7 +359,7 @@ static int do_modify_regb(struct bifrost_device *dev, int bar, u32 offset,
          *       never from ISRs etc. so a spin_lock/unlock should be
          *       enough...
          */
-        spin_lock(&mem->lock);
+        mutex_lock(&mem->lock);
         rc = mem->rd(mem->handle, offset, &v);
         if (rc < 0)
                 goto e_exit;
@@ -367,13 +367,13 @@ static int do_modify_regb(struct bifrost_device *dev, int bar, u32 offset,
         rc = mem->wr(mem->handle, offset, v);
         if (rc < 0)
                 goto e_exit;
-        spin_unlock(&mem->lock);
+        mutex_unlock(&mem->lock);
         *value = v;
 
         return 0;
 
   e_exit:
-        spin_unlock(&mem->lock);
+        mutex_unlock(&mem->lock);
         return rc;
 }
 
@@ -386,7 +386,9 @@ static int do_read_regb(struct bifrost_device *dev, int bar,
         if (v < 0)
                 return v;
 
+        mutex_lock(&dev->regb[bar].lock);
         v = dev->regb[bar].rd(dev->regb[bar].handle, offset, value);
+        mutex_unlock(&dev->regb[bar].lock);
         if (v < 0)
                 return v;
 
@@ -402,7 +404,9 @@ static int do_write_regb(struct bifrost_device *dev, int bar,
         if (v < 0)
                 return v;
 
+        mutex_lock(&dev->regb[bar].lock);
         v = dev->regb[bar].wr(dev->regb[bar].handle, offset, value);
+        mutex_unlock(&dev->regb[bar].lock);
         if (v < 0)
                 return v;
 

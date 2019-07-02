@@ -18,6 +18,7 @@
 #include <linux/list.h>
 #include <linux/sched.h>
 #include <linux/spinlock.h>
+#include <linux/mutex.h>
 #include <linux/timer.h>
 #include <linux/poll.h>
 #include <linux/proc_fs.h>
@@ -122,7 +123,7 @@ struct device_memory {
         unsigned long flags;
         void __iomem *addr;     /* Kernel logical address */
         struct pci_dev *pdev;   /* Handle to PCI device struct */
-        spinlock_t lock;        /* Use this to make atomic changes */
+        struct mutex lock;        /* Use this to make atomic changes */
 
         /* Access functions */
         void *handle;
