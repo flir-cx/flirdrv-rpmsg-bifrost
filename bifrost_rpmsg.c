@@ -211,6 +211,11 @@ static int rpmsg_bifrost_resume(struct device *dev)
 	return rpmsg_write_device_memory(NULL, 0x55, 0x5555);
 }
 
+static void rpmsg_bifrost_shutdown(struct device *dev)
+{
+	rpmsg_bifrost_suspend(dev);
+}
+
 static struct rpmsg_device_id rpmsg_driver_bifrost_id_table[] = {
 	{ .name	= "rpmsg-client-bifrost" },
 	{ },
@@ -223,6 +228,7 @@ static struct rpmsg_driver rpmsg_bifrost_client = {
 	.drv = {
 		.name	= KBUILD_MODNAME,
 		.pm	= &rpmsg_bifrost_pm,
+		.shutdown	= rpmsg_bifrost_shutdown,
 	},
 	.id_table	= rpmsg_driver_bifrost_id_table,
 	.probe		= rpmsg_bifrost_probe,
