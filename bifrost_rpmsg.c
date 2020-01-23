@@ -158,7 +158,7 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 				struct bifrost_event event;
 				memset(&event, 0, sizeof(event));
 				event.type = BIFROST_EVENT_TYPE_IRQ;
-				event.data.irq_source = 1;
+				event.data.irq_source = msg->reg;
 				event.data.irqstatus.value = msg->value;
 				bifrost_create_event_in_atomic(bdev, &event);
 			}
