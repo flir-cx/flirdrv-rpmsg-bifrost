@@ -64,6 +64,7 @@ int rpmsg_read_device_memory(void *handle, u32 offset, u32 *value)
 	msg.reg = offset;
 	msg.value = *value;
 	recv_reg = 0;
+	reinit_completion(&bdev->completion);
 
 	if (bdev->rpmsg_dev && bdev->rpmsg_dev->ept)
 		rpmsg_send(bdev->rpmsg_dev->ept, &msg, sizeof(msg));
