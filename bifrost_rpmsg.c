@@ -34,12 +34,14 @@ enum msg_type {
 	REG_M4_READ,	// To M4, reg, From M4 reg+value
 	M4_EXEC_IRQ,	// From M4, value = irq status
 	M4_HW_IRQ,	// From M4, value = irq num
+	M4_LOG, // From M4, print log to kernel msg buffer
 };
 
 struct m4_msg {
 	uint32_t type;
 	uint32_t reg;
 	uint32_t value;
+	uint8_t data[32];
 };
 
 static uint32_t recv_reg;
@@ -162,6 +164,11 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 				event.data.irq_source = msg->reg;
 				event.data.irqstatus.value = msg->value;
 				bifrost_create_event_in_atomic(bdev, &event);
+			}
+			break;
+		case M4_LOG:
+			{
+				dev_info(&dev->dev, "M4 msg: %s\n", msg->data);
 			}
 			break;
 
