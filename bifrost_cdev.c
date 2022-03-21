@@ -278,7 +278,11 @@ void bifrost_create_event(struct bifrost_device *dev,
         struct list_head *pos, *tmp;
         struct bifrost_event_cont *p;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
+        event->timestamp.received = ns_to_kernel_old_timeval(ktime_get_ns());
+#else
         do_gettimeofday(&event->timestamp.received);
+#endif
 
         spin_lock(&dev->lock_list);
         list_for_each_safe(pos, tmp, &dev->list) {
@@ -544,6 +548,10 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
         case BIFROST_IOCTL_START_DMA_UP_USER:
         case BIFROST_IOCTL_START_DMA_DOWN_USER:
             flags =  BIFROST_DMA_USER_BUFFER;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
+	    /* actually gcc 10 */
+	    fallthrough;
+#endif
         case BIFROST_IOCTL_START_DMA_UP:
         case BIFROST_IOCTL_START_DMA_DOWN:
         {
@@ -598,7 +606,11 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
                 p = dequeue_event(hnd);
                 if (p == NULL)
                         return -EINVAL;
-                do_gettimeofday(&p->event.timestamp.forwarded);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
+                p->event.timestamp.forwarded = ns_to_kernel_old_timeval(ktime_get_ns());
+#else
+		do_gettimeofday(&p->event.timestamp.forwarded);
+#endif
                 if (copy_to_user(uarg, &p->event, sizeof(p->event)) != 0) {
                         kfree(p);
                         return -EFAULT;

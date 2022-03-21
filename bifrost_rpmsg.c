@@ -406,12 +406,20 @@ irqreturn_t FVDIRQ2Service(int irq, void *dev_id)
 	struct bifrost_device *dev = (struct bifrost_device *)dev_id;
 	struct bifrost_event event;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
+	struct timespec64 ts64;
+	ktime_get_ts64(&ts64);
+	event.data.frame.time.tv_sec = (__kernel_old_time_t) ts64.tv_sec;
+	event.data.frame.time.tv_nsec = (long) ts64.tv_nsec;
+#else
+	getnstimeofday(&event.data.frame.time);
+#endif
 	memset(&event, 0, sizeof(event));
 
 	// Indicate completion
 	event.type = BIFROST_EVENT_TYPE_IRQ;
 	event.data.irq_source = 0x20;
-	getnstimeofday(&event.data.frame.time);
+
 	bifrost_create_event_in_atomic(dev, &event);
 
 	return IRQ_HANDLED;
