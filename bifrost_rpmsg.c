@@ -15,10 +15,15 @@
 #include <linux/pagemap.h>
 #include <linux/platform_device.h>
 #include <linux/rpmsg.h>
+#include <linux/usb/phy.h>
 
 #include "bifrost.h"
 
 extern struct bifrost_device *bdev;
+
+/* UBS CC1 and CC2 values */
+extern uint16_t m4_cc1_adc;
+extern uint16_t m4_cc2_adc;
 
 irqreturn_t FVDIRQ1Service(int irq, void *dev_id);
 irqreturn_t FVDIRQ2Service(int irq, void *dev_id);
@@ -35,6 +40,7 @@ enum msg_type {
 	M4_EXEC_IRQ,	// From M4, value = irq status
 	M4_HW_IRQ,	// From M4, value = irq num
 	M4_LOG, // From M4, print log to kernel msg buffer
+	M4_USB_CC, // From M4, send usb cc values
 };
 
 struct m4_msg {
@@ -171,7 +177,11 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 				dev_info(&dev->dev, "M4 msg: %s\n", msg->data);
 			}
 			break;
-
+		case M4_USB_CC:
+			{
+				m4_cc1_adc = (msg->value >> 16) & 0xFFFF;
+				m4_cc2_adc = msg->value & 0xFFFF;
+			}
 		default:
 			break;
 	}
