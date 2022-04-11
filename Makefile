@@ -8,7 +8,7 @@ ifneq ($(KERNEL_PATH),)
        KERNEL_SRC = $(KERNEL_PATH)
 endif
 
-EXTRA_CFLAGS = -Werror
+EXTRA_CFLAGS = -Werror -Wno-attribute-alias -Wno-missing-attributes
 
 	obj-m := bifrost.o
 	bifrost-objs += bifrost_cdev.o
