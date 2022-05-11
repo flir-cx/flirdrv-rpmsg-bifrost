@@ -17,12 +17,18 @@
 #include <linux/time.h>
 #else
 #include <sys/time.h>
+#include <linux/time_types.h>
+#include <linux/version.h>
 #endif
 #include <linux/version.h>
 #include <linux/ioctl.h>
 #include <linux/types.h>
 
 #define BIFROST_IOC_MAGIC 'B'
+
+#ifndef LINUX_VERSION_CODE
+  ALERT("LINUX_VERSION_CODE undefined\n");
+#endif
 
 struct bifrost_info {
         struct {
@@ -98,9 +104,9 @@ struct bifrost_membus_frame {
         __u32 frameNo;         /* Buffer number where we can find the frame. */
         __u32 frameSize;       /* Size of the compressed frame. */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
-        struct __kernel_old_timespec time;
+        struct __kernel_old_timespec time; /* time stamp when we got the irq. */
 #else
-        struct timespec time;  /* time stamp when we got the irq. */
+        struct timespec time;    /* time stamp when we got the irq. */
 #endif
 };
 
@@ -147,7 +153,7 @@ struct bifrost_event {
         } data;
         struct {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
-	        struct __kernel_old_timeval received;
+                struct __kernel_old_timeval received;
                 struct __kernel_old_timeval forwarded;
 #else
                 struct timeval received;
