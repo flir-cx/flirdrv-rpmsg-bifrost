@@ -18,6 +18,7 @@
 #else
 #include <sys/time.h>
 #endif
+#include <linux/version.h>
 #include <linux/ioctl.h>
 #include <linux/types.h>
 
