@@ -17,7 +17,6 @@
 #include <linux/time.h>
 #else
 #include <sys/time.h>
-#include <linux/time_types.h>
 #include <linux/version.h>
 #endif
 #include <linux/version.h>
@@ -98,6 +97,13 @@ struct bifrost_dma {
  * This struct is returned when FPGA has JPEGLS Frame to deliver
  * irq_source = 4
  */
+
+#ifndef  __KERNEL__
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
+#include <linux/time_types.h> 
+#endif
+#endif
+
 struct bifrost_membus_frame {
         __u32 irq_source;      /* irq_source, note this is needed so we match
                                     the event struct. */
