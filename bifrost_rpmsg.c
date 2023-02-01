@@ -196,13 +196,20 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 static int rpmsg_bifrost_probe(struct rpmsg_device *dev)
 {
 	struct m4_msg msg;
-	void *vaddr = NULL;
 	dma_addr_t paddr;
 
 	dev_info(&dev->dev, "new channel: 0x%x -> 0x%x!\n", dev->src, dev->dst);
 
 	bdev->rpmsg_dev = dev;
-	vaddr = dma_alloc_coherent(NULL, PAGE_ALIGN(FRAME_GRAB_IMAGE_SIZE*2), &paddr, GFP_DMA | GFP_KERNEL);
+	if (dma_set_coherent_mask(&dev->dev, DMA_BIT_MASK(32))) {
+		dev_err(&dev->dev, "Tried to set bad coherent mask.\n");
+		return -EINVAL;
+	}
+	if (!dma_alloc_coherent(
+		    &dev->dev, PAGE_ALIGN(FRAME_GRAB_IMAGE_SIZE*2),
+		    &paddr, GFP_DMA | GFP_KERNEL
+		    ))
+		return -ENOMEM;
 
 	msg.type = REG_M4_WRITE;
 	msg.reg = 0x33;
