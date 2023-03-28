@@ -279,7 +279,7 @@ void bifrost_create_event(struct bifrost_device *dev,
         struct bifrost_event_cont *p;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
-        event->timestamp.received = ns_to_kernel_old_timeval(ktime_get_ns());
+        event->timestamp.received = ns_to_kernel_old_timeval(ktime_get_real_ns());
 #else
         do_gettimeofday(&event->timestamp.received);
 #endif
@@ -607,7 +607,7 @@ static long bifrost_unlocked_ioctl(struct file *file, unsigned int cmd,
                 if (p == NULL)
                         return -EINVAL;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0)
-                p->event.timestamp.forwarded = ns_to_kernel_old_timeval(ktime_get_ns());
+                p->event.timestamp.forwarded = ns_to_kernel_old_timeval(ktime_get_real_ns());
 #else
 		do_gettimeofday(&p->event.timestamp.forwarded);
 #endif
