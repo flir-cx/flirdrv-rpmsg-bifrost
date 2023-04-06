@@ -21,10 +21,6 @@
 
 extern struct bifrost_device *bdev;
 
-/* UBS CC1 and CC2 values */
-extern uint16_t m4_cc1_adc;
-extern uint16_t m4_cc2_adc;
-
 irqreturn_t FVDIRQ1Service(int irq, void *dev_id);
 irqreturn_t FVDIRQ2Service(int irq, void *dev_id);
 
@@ -151,6 +147,7 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 		void *priv, u32 src)
 {
 	struct m4_msg *msg = data;
+	struct usb_phy *usb_phy;
 
 	switch (msg->type) {
 		case REG_M4_READ:
@@ -179,9 +176,18 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 			break;
 		case M4_USB_CC:
 			{
-				m4_cc1_adc = (msg->value >> 16) & 0xFFFF;
-				m4_cc2_adc = msg->value & 0xFFFF;
+				usb_phy = usb_get_phy(USB_PHY_TYPE_USB2);
+				if (IS_ERR_OR_NULL(usb_phy)) {
+					dev_err(&dev->dev, "Failed to get usb device.\n");
+					break;
+				}
+
+				usb_phy->chg_cc.cc1 = (msg->value >> 16) & 0xFFFF;
+				usb_phy->chg_cc.cc2 = msg->value & 0xFFFF;
+
+				usb_phy->charger_detect(usb_phy);
 			}
+			break;
 		default:
 			break;
 	}
