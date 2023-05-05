@@ -181,11 +181,9 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 					dev_err(&dev->dev, "Failed to get usb device.\n");
 					break;
 				}
-
-				usb_phy->chg_cc.cc1 = (msg->value >> 16) & 0xFFFF;
-				usb_phy->chg_cc.cc2 = msg->value & 0xFFFF;
-
-				usb_phy->charger_detect(usb_phy);
+				cc_val_set(&usb_phy->chg_cc,
+					   (msg->value >> 16) & 0xFFFF,
+					   msg->value & 0xFFFF);
 			}
 			break;
 		default:
