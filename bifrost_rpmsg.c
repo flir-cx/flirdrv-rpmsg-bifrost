@@ -176,6 +176,7 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 			break;
 		case M4_USB_CC:
 			{
+#ifdef CONFIG_USB_PHY_EXT_CC
 				usb_phy = usb_get_phy(USB_PHY_TYPE_USB2);
 				if (IS_ERR_OR_NULL(usb_phy)) {
 					dev_err(&dev->dev, "Failed to get usb device.\n");
@@ -184,6 +185,9 @@ static int rpmsg_bifrost_callback(struct rpmsg_device *dev, void *data, int len,
 				cc_val_set(&usb_phy->chg_cc,
 					   (msg->value >> 16) & 0xFFFF,
 					   msg->value & 0xFFFF);
+#else
+#error Kernel configured without CONFIG_USB_PHY_EXT_CC enabled
+#endif
 			}
 			break;
 		default:
